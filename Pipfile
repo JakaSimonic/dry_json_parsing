@@ -10,6 +10,8 @@ dataclasses-json = "*"
 black = "*"
 mypy = "*"
 pre-commit = "*"
+pytest = "*"
+pytest-lazy-fixture = "*"
 
 [requires]
 python_version = "3.10"
