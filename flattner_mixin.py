@@ -6,6 +6,7 @@ from model.single import Single
 CollectionTypes = Union[CurrencyCollection, OriginOfFundsCollection]
 CollectionItems = Union[Currency, OriginOfFunds]
 
+
 class FlattnerMixin:
     @staticmethod
     def flatten_collection(
@@ -36,4 +37,3 @@ class FlattnerMixin:
             return None
 
         return value
-
