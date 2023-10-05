@@ -1,34 +1,44 @@
-from dataclasses import make_dataclass
-from dataclasses_json import DataClassJsonMixin
-from typing import Optional
+from dataclasses import dataclass, make_dataclass
+from dataclasses_json import DataClassJsonMixin, dataclass_json
+from typing import Any, Generic, Optional, TypeVar, Type, cast
+from model.currency_collection import Currency
+from model.origin_of_funds_collection import OriginOfFunds
+
+T = TypeVar("T")
+
+@dataclass_json
+@dataclass
+class CollectionProperties(Generic[T]):
+    properties: Optional[T] = None
+
+@dataclass_json
+@dataclass
+class FieldCollection(Generic[T]):
+    collections: Optional[dict[str, CollectionProperties[T]]] = None
 
 
-def collection_factory(name, fields):
+
+def collection_factory(cls: type[T]) -> type[FieldCollection[T]]:
+    name = cls.__name__
     properties_class_name = f"{name}Properties"
     collection_class_name = f"{name}Collections"
 
-    class_fileds = [(field, Optional[str], None) for field in fields]
-    nested_class = make_dataclass(name, class_fileds, bases=(DataClassJsonMixin,))
-    nested_class.__module__ = __name__
-
     properties_class = make_dataclass(
         properties_class_name,
-        [("properties", Optional[nested_class], None)],
+        [("properties", cls, None)],
         bases=(DataClassJsonMixin,),
     )
     properties_class.__module__ = __name__
 
+    properties_class = cast(type[CollectionProperties[T]], properties_class)
+
     collection_class = make_dataclass(
         collection_class_name,
-        [("collections", Optional[dict[str, properties_class]], None)],
+        [("collections", dict[str, properties_class], None)],  # type: ignore
         bases=(DataClassJsonMixin,),
     )
     collection_class.__module__ = __name__
 
-    return collection_class, nested_class
+    return collection_class
 
 
-COLLECTIONS_TYPES = {
-    "Currency": collection_factory("Currency", ["buyCurrency", "sellCurrency"]),
-    "OriginOfFunds": collection_factory("OriginOfFunds", ["originOfFunds"]),
-}

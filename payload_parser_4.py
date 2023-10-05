@@ -1,19 +1,18 @@
 from dataclasses import dataclass, fields
-from typing import Any, Callable, Optional, TypeVar, Union, Type
+from typing import Any, Callable, Optional, Union, TypeVar
 
 from dataclasses_json import dataclass_json
-from model.collections_factory import  collection_factory
+from model.collections_factory import FieldCollection
 from model.single import Single
-from model.currency_collection import Currency
-from model.origin_of_funds_collection import OriginOfFunds
+from model.currency_collection import CurrencyCollection
+from model.origin_of_funds_collection import OriginOfFundsCollection
 
+T = TypeVar("T")
 
-CurrencyCollection = collection_factory(Currency)
-OriginOfFundsCollection = collection_factory(OriginOfFunds)
+FlatCollection = Callable[[FieldCollection[T]], Optional[list[T]]]
+FlatSingle = Callable[[Single], Optional[str]]
+FlattenType = Union[FlatCollection, FlatSingle]
 
-FlattenType = Callable[
-    [Union[Any, Single]], Optional[Union[str, list[Any]]]
-]
 
 class Flattener:
     def __init__(self, flatten: FlattenType):
@@ -34,7 +33,7 @@ class Flattener:
         return self.flatten(attribute)
 
 
-def flatten_collection(collection: Any) -> Optional[list[Any]]:
+def flatten_collection(collection: FieldCollection[T]) -> Optional[list[T]]:
     if not collection:
         return None
     collections = collection.collections
@@ -70,28 +69,27 @@ class Properties:
     currency: Optional[CurrencyCollection] = None
 
 
-def flat_properties_class_factory() -> Type[Properties]:
+def flat_properties_class_factory() -> type[Properties]:
     def flat_init(self, instance: Properties):
         self.instance = instance
 
-    kwds = {"__init__": flat_init}
+    kwds: dict[str, Any] = {"__init__": flat_init}
     for field in fields(Properties):
         type_name = str(field.type)
-        func = None
+
         if "Single" in type_name:
-            func = flatten_single
-        if "Collection" in type_name:
-            func = flatten_collection
-        if func:
-            kwds[field.name] = Flattener(func)
+            kwds[field.name] = Flattener(flatten_single)
+        elif "Collection" in type_name:
+            kwds[field.name] = Flattener(flatten_collection)
 
     return type("FlatProperties", (), kwds)
 
 
 FlatProperties = flat_properties_class_factory()
 
+
 with open("fenx-payload.json") as f:
     payload = Properties.from_json(f.read())
 
-    flat_payload: Type[Properties] = FlatProperties(payload)
+    flat_payload: Properties = FlatProperties(payload)
     print(flat_payload.currency)
