@@ -19,4 +19,4 @@ class CurrencyProperties:
 @dataclass_json
 @dataclass
 class CurrencyCollection:
-    collectioons: Optional[dict[str, CurrencyProperties]] = None
+    collections: Optional[dict[str, CurrencyProperties]] = None

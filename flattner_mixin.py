@@ -1,16 +1,32 @@
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 from model.currency_collection import CurrencyCollection, Currency
 from model.origin_of_funds_collection import OriginOfFundsCollection, OriginOfFunds
 from model.single import Single
 
-CollectionTypes = Union[CurrencyCollection, OriginOfFundsCollection]
-CollectionItems = Union[Currency, OriginOfFunds]
+CollectionParam = Optional[Union[CurrencyCollection, OriginOfFundsCollection]]
+CollectionRet = Optional[list[Union[Currency, OriginOfFunds]]]
+
+CollectionCallableType = Callable[[CollectionParam], CollectionRet]
+SingleCallableType = Callable[[Optional[Single]], Optional[str]]
+
+MappingCallableType = Union[SingleCallableType, CollectionCallableType]
+
 
 class FlattnerMixin:
+    @classmethod
+    def flatten_mapper(cls, field_type: str) -> Optional[MappingCallableType]:
+        if "Single" in field_type:
+            return cls.flatten_single
+
+        if "Collection" in field_type:
+            return cls.flatten_collection
+
+        return None
+
     @staticmethod
     def flatten_collection(
-        collection: Optional[CollectionTypes],
-    ) -> Optional[list[CollectionItems]]:
+        collection: CollectionParam,
+    ) -> CollectionRet:
         if not collection:
             return None
         collections = collection.collections
@@ -36,4 +52,3 @@ class FlattnerMixin:
             return None
 
         return value
-
