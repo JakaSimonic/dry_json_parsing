@@ -83,6 +83,7 @@ coverage.xml
 *,cover
 cover/
 .pytest_cache/
+.mypy_cache/
 reports/*
 .pylint.d
 

@@ -6,16 +6,17 @@ from model.origin_of_funds_collection import OriginOfFunds
 
 T = TypeVar("T")
 
+
 @dataclass_json
 @dataclass
 class CollectionProperties(Generic[T]):
     properties: Optional[T] = None
 
+
 @dataclass_json
 @dataclass
 class FieldCollection(Generic[T]):
     collections: Optional[dict[str, CollectionProperties[T]]] = None
-
 
 
 def collection_factory(cls: type[T]) -> type[FieldCollection[T]]:
@@ -40,5 +41,3 @@ def collection_factory(cls: type[T]) -> type[FieldCollection[T]]:
     collection_class.__module__ = __name__
 
     return collection_class
-
-
