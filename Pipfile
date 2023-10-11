@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 dataclasses-json = "*"
 pylint = "*"
+pre-commit = "*"
 
 [dev-packages]
 black = "*"
