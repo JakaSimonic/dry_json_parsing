@@ -1,10 +1,7 @@
 from dataclasses import fields
-from typing import Any, TypeVar
+from typing import Any
 from flattner_mixin import FlattnerMixin
 from model.properties import Properties
-
-T = TypeVar("T")
-
 
 class Flattener(FlattnerMixin):
     def __init__(self, field_type: str):
@@ -35,7 +32,7 @@ class Flattener(FlattnerMixin):
         raise Exception("Read only!")
 
 
-def flat_properties_class_factory(dataclass_instance: Properties) -> Properties:
+def flat_properties_factory(dataclass_instance: Properties) -> Properties:
     def flat_init(self, instance: Properties):
         self._instance = instance
 
