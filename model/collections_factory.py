@@ -1,25 +1,9 @@
-from dataclasses import dataclass, make_dataclass
-from dataclasses_json import DataClassJsonMixin, dataclass_json
-from typing import Any, Generic, Optional, TypeVar, Type, cast
-from model.currency_collection import Currency
-from model.origin_of_funds_collection import OriginOfFunds
+from dataclasses import make_dataclass
 
-T = TypeVar("T")
+from dataclasses_json import DataClassJsonMixin
 
 
-@dataclass_json
-@dataclass
-class CollectionProperties(Generic[T]):
-    properties: Optional[T] = None
-
-
-@dataclass_json
-@dataclass
-class FieldCollection(Generic[T]):
-    collections: Optional[dict[str, CollectionProperties[T]]] = None
-
-
-def collection_factory(cls: type[T]) -> type[FieldCollection[T]]:
+def collection_factory(cls: type) -> type:
     name = cls.__name__
     properties_class_name = f"{name}Properties"
     collection_class_name = f"{name}Collections"
@@ -30,8 +14,6 @@ def collection_factory(cls: type[T]) -> type[FieldCollection[T]]:
         bases=(DataClassJsonMixin,),
     )
     properties_class.__module__ = __name__
-
-    properties_class = cast(type[CollectionProperties[T]], properties_class)
 
     collection_class = make_dataclass(
         collection_class_name,
