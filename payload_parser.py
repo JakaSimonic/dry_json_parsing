@@ -1,14 +1,21 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Union, List
 
 from dataclasses_json import dataclass_json, config
+from model.currency_collection import Currency
+from model.origin_of_funds_collection import OriginOfFunds
+from model.single import Single
 
+CurrencyLists = Optional[List[Currency]]
+OriginOfFundsLists = Optional[List[OriginOfFunds]]
+
+CollectionLists = Union[CurrencyLists, OriginOfFundsLists]
 
 def single(**kwargs):
-    def _deserialize(value):
+    def _deserialize(value: dict) -> Optional[Single]:
         if not value:
             raise ValueError("single deserializer does not support None type.")
-        return value.get("value")
+        return Single(value.get("value"))
 
     return field(
         default=None,
@@ -19,15 +26,15 @@ def single(**kwargs):
     )
 
 
-def collection(field_name, **kwargs):
-    def _deserialize(datagroup):
+def collection(data_type: type, **kwargs):
+    def _deserialize(datagroup: dict) -> CollectionLists:
         if not datagroup:
             raise ValueError("collection deserializer does not support None type.")
         collection_items = []
         for _, value in datagroup.get("collections", {}).items():
-            item = value.get("properties", {}).get(field_name)
+            item = value.get("properties", {})
             if item:
-                collection_items.append(item)
+                collection_items.append(data_type(**item))
         return collection_items
 
     return field(
@@ -42,11 +49,11 @@ def collection(field_name, **kwargs):
 @dataclass_json
 @dataclass
 class Properties:
-    eburyCountry: Optional[str] = single()
-    originOfFundsdatagroup: Optional[list[str]] = collection(field_name="originOfFunds")
-    currency: Optional[list[str]] = collection(field_name="currency")
+    eburyCountry: Optional[Single] = single()
+    originOfFunds: OriginOfFundsLists = collection(OriginOfFunds)
+    currency: CurrencyLists = collection(Currency)
 
 
 with open("fenx-payload.json") as f:
-    payload = Properties.from_json(f.read())
+    payload = Properties.from_json(f.read())  # type: ignore
     print(payload)
