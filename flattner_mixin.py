@@ -1,7 +1,8 @@
-from typing import Optional, Union, Callable
+from typing import Optional, TypeVar, Union, Callable
 from model.currency_collection import CurrencyCollection, Currency
 from model.origin_of_funds_collection import OriginOfFundsCollection, OriginOfFunds
 from model.single import Single
+from enum import Enum
 
 CollectionParam = Optional[Union[CurrencyCollection, OriginOfFundsCollection]]
 CollectionRet = Optional[list[Union[Currency, OriginOfFunds]]]
@@ -11,14 +12,19 @@ SingleCallableType = Callable[[Optional[Single]], Optional[str]]
 
 MappingCallableType = Union[SingleCallableType, CollectionCallableType]
 
+class FlattnerType(Enum):
+    NONE=1
+    COLLECTION=2
+    SINGLE=3
+
 
 class FlattnerMixin:
     @classmethod
-    def flatten_mapper(cls, field_type: str) -> Optional[MappingCallableType]:
-        if "Single" in field_type:
+    def flatten_mapper(cls, flattener_type: FlattnerType) -> Optional[MappingCallableType]:
+        if  flattener_type is FlattnerType.SINGLE:
             return cls.flatten_single
 
-        if "Collection" in field_type:
+        if  flattener_type is FlattnerType.COLLECTION:
             return cls.flatten_collection
 
         return None

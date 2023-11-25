@@ -1,22 +1,24 @@
-from dataclasses import fields
-from typing import Any
-from flattner_mixin import FlattnerMixin
+from typing import Optional
+from flattner_mixin import CollectionRet, FlattnerMixin, FlattnerType
 from model.properties import Properties
+from model.single import Single
+from model.origin_of_funds_collection import OriginOfFunds
+from model.currency_collection import Currency
+
+
 
 class Flattener(FlattnerMixin):
     def __init__(self, field_type: str):
-        self.name = None
-
         self.flatten_func = self.flatten_mapper(field_type)
 
-    def __set_name__(self, owner, name):
-        self.name = name
+    def __set_name__(self, owner, name: str):
+        self.name: str = name
 
-    def __get__(self, instance, owner=None):
+    def __get__(self, instance, owner=None) -> CollectionRet | Optional[str]:
         if not instance:
-            return self
+            raise Exception("Instance only method!")
 
-        shadow_instance = instance._instance
+        shadow_instance: Properties = instance._instance
 
         attribute = getattr(shadow_instance, self.name)
 
@@ -31,18 +33,12 @@ class Flattener(FlattnerMixin):
     def __delete__(self, obj, value):
         raise Exception("Read only!")
 
+class FlatProperties:
+    eburyCountry = Flattener(FlattnerType.SINGLE)
+    originOfFunds = Flattener(FlattnerType.COLLECTION)
+    currency = Flattener(FlattnerType.COLLECTION)
+    
+    __repr__ = Properties.__repr__
 
-def flat_properties_factory(dataclass_instance: Properties) -> Properties:
-    def flat_init(self, instance: Properties):
-        self._instance = instance
-
-    kwds: dict[str, Any] = {}
-
-    kwds["__init__"] = flat_init
-    kwds["__repr__"] = Properties.__repr__
-
-    for field in fields(dataclass_instance):
-        filed_type = str(field.type)
-        kwds[field.name] = Flattener(filed_type)
-
-    return type("FlatProperties", (), kwds)(dataclass_instance)
+    def __init__(self, properties_instance: Properties):
+        self._instance = properties_instance

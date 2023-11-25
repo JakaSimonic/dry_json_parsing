@@ -3,7 +3,6 @@ from typing import Optional
 from dataclasses_json import dataclass_json
 from model.currency_collection import CurrencyCollection
 from model.origin_of_funds_collection import OriginOfFundsCollection
-
 from model.single import Single
 
 
