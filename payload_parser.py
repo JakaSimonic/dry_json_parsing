@@ -1,4 +1,4 @@
-from flattener_descriptor import flat_properties_factory
+from model.properties import flat_properties_factory
 from model.properties import Properties
 
 with open("fenx-payload.json") as f:
