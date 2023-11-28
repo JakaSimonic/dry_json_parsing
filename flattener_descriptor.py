@@ -1,6 +1,7 @@
 from typing import Optional
 from flattner_mixin import FlattnerMixin
 
+
 class Flattener(FlattnerMixin):
     def __init__(self, field_type: str):
         self.flatten_func = self.flatten_mapper(field_type)

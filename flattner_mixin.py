@@ -1,5 +1,5 @@
-from enum import Enum
 from typing import Any, Optional, Union, Callable
+from model.collections_factory import COLLECTIONS_SUFFIX
 from model.single import Single
 
 CollectionCallableType = Callable[[Any], list]
@@ -11,10 +11,10 @@ MappingCallableType = Union[SingleCallableType, CollectionCallableType]
 class FlattnerMixin:
     @classmethod
     def flatten_mapper(cls, field_type: str) -> Optional[MappingCallableType]:
-        if "Single" in field_type:
+        if Single.__name__ in field_type:
             return cls.flatten_single
 
-        if "Collection" in field_type:
+        if COLLECTIONS_SUFFIX in field_type:
             return cls.flatten_collection
 
         return None
