@@ -8,19 +8,22 @@ SingleCallableType = Callable[[Optional[Single]], Optional[str]]
 
 MappingCallableType = Union[SingleCallableType, CollectionCallableType]
 
+
 class FlattnerType(Enum):
-    NONE=1
-    COLLECTION=2
-    SINGLE=3
+    NONE = 1
+    COLLECTION = 2
+    SINGLE = 3
 
 
 class FlattnerMixin:
     @classmethod
-    def flatten_mapper(cls, flattener_type: FlattnerType) -> Optional[MappingCallableType]:
-        if  flattener_type is FlattnerType.SINGLE:
+    def flatten_mapper(
+        cls, flattener_type: FlattnerType
+    ) -> Optional[MappingCallableType]:
+        if flattener_type is FlattnerType.SINGLE:
             return cls.flatten_single
 
-        if  flattener_type is FlattnerType.COLLECTION:
+        if flattener_type is FlattnerType.COLLECTION:
             return cls.flatten_collection
 
         return None
